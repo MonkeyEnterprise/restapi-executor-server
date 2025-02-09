@@ -1,39 +1,58 @@
-# propresenter-parent-pager-gateway
 
-Open een terminal in de map waar `Dockerfile` en `nginx.conf` staan, en voer het volgende commando uit:
+### **Nginx API Parentpager Gateway Setup for Docker used for Propresenter 7**
+
+This setup creates an **NGINX API Gateway** running in a **Docker container**. The gateway listens on port **6410** and forwards specific endpoints to a backend service running on **localhost:5000**. The gateway only accepts **GET** and **POST** requests for the `/v1/stage/state` and `/version` endpoints.
+
+---
+
+### **1. Build the Docker Container**
+
+Open a terminal in the directory where `Dockerfile` and `nginx.conf` are located and run the following command:
 
 ```sh
 docker build -t nginx_api_gateway .
 ```
 
-### Start de container
+---
 
-Run de container en map poort 6410 naar de host:
+### **2. Start the Container**
+
+Run the container and map port 6410 to the host:
 
 ```sh
 docker run --name api-gateway -p 6410:6410 -d nginx_api_gateway
 ```
 
-### Controleer of de container draait
+---
 
-Bekijk of de container actief is:
+### **3. Check if the Container is Running**
+
+To see if the container is running, use the following command:
 
 ```sh
 docker ps
 ```
 
-### Bekijk de logs van de container
+---
 
-Als je problemen ondervindt, kun je de logs bekijken met:
+### **4. View the Container Logs**
+
+If there are any issues, view the logs using:
 
 ```sh
 docker logs api-gateway
 ```
 
-### Automatisch opnieuw starten bij opstarten
+---
 
-Als je wilt dat de container automatisch opnieuw start bij het opstarten van Windows, kun je de container draaien met de `--restart` optie:
+### **5. Auto-Restart on System Reboot**
+
+If you want the container to automatically restart upon Windows reboot, you can run the container with the `--restart` option:
 
 ```sh
 docker run --name api-gateway -p 6410:6410 -d --restart always nginx_api_gateway
 ```
+
+---
+
+This setup will create a lightweight **API Gateway** with NGINX, forwarding specific endpoints to the backend server, making it a simple solution for managing API traffic in Dockerized environments.
