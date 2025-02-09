@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  # WebSocket Client (alleen de client zonder server)
+  websocket-client:
+    build: ./client
+    container_name: websocket-client
+    restart: always
+    environment:
+      - FLASK_ENV=production
+      - SERVER_URL=http://<SERVER_IP>:5000  # IP-adres van de server waar de WebSocket draait
+    volumes:
+      - ./client:/app
+    networks:
+      - websocket-network
+
+networks:
+  websocket-network:
+    driver: bridge
