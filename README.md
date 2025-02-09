@@ -21,3 +21,20 @@ docker restart api-gateway
 ```
 
 ---
+
+### **2. Test server**
+Check HTTP redirect:
+
+```sh
+curl -I http://parentpager.pouwertronics.nl
+```
+Dit zou een 301 Redirect naar HTTPS moeten geven.
+
+**Test API-key beveiliging:**
+
+```sh
+curl -H "X-API-KEY: JOUW-GEHEIME-API-KEY" https://parentpager.pouwertronics.nl/version
+```
+Dit zou een 200 OK moeten geven als de key correct is.
+
+---
