@@ -1,4 +1,4 @@
-###Bouw de Docker-container:
+## Bouw de Docker-container:
 
 Open een terminal in de map waar je Dockerfile en client.py hebt opgeslagen, en voer het volgende uit:
 
