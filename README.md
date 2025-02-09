@@ -4,18 +4,18 @@
 Start de services en laat NGINX draaien zodat Let's Encrypt toegang heeft:
 
 ```sh
-docker compose up -d --build
+docker-compose up -d --build
 ```
 
 **SSL-certificaat ophalen**
 Run de Certbot-container:
 ```sh
-docker compose run --rm certbot
+docker-compose run --rm certbot
 ```
 
 **NGINX herstarten met SSL**
 ```sh
-docker compose restart nginx
+docker-compose restart nginx
 ```
 **Vernieuw automatische de SSL certificaat met crontab**
 ```sh

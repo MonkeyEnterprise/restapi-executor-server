@@ -1,15 +1,23 @@
-# Gebruik een officiële Python runtime als basis
+# Basisimage (gebruik Python 3.9 of nieuwer)
 FROM python:3.9-slim
 
-# Stel de werkdirectory in
+# Werkdirectory instellen
 WORKDIR /app
 
-# Kopieer het requirements-bestand en installeer de afhankelijkheden
-COPY requirements.txt /app/
+# Vereiste pakketten installeren
+RUN pip install --upgrade pip
+
+# Kopieer eerst alleen requirements.txt om caching te benutten
+COPY requirements.txt .
+
+# Installeer de afhankelijkheden
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Kopieer de servercode naar de container
-COPY . /app
+# Kopieer de rest van de applicatiebestanden
+COPY . .
 
-# Stel het commando in om de Flask server te starten
-CMD ["python", "server.py"]
+# Poort openen
+EXPOSE 5000
+
+# Container opstarten
+CMD ["python", "app.py"]

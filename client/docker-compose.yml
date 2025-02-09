@@ -1,4 +1,4 @@
-version: "3.8"
+cl    version: "3.8"
 
 services:
   # WebSocket Client (alleen de client zonder server)

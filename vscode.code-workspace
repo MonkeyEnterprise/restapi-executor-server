@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cSpell.ignoreWords": [
+			"socketio",
+			"jsonify",
+			"levelname"
+		]
+	}
+}
