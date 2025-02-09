@@ -1,28 +1,27 @@
-version: '3'
+version: "3.8"
+
 services:
+  websocket-server:
+    build: ./server
+    container_name: websocket-server
+    restart: always
+
   nginx:
     image: nginx:latest
-    container_name: nginx_reverse_proxy
+    container_name: nginx
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    environment:
-      - PC1_IP=http://flask_app:5000  # Dynamisch IP van PC 1
+      - ./server/nginx.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
     depends_on:
-      - flask_app
-    networks:
-      - app_network
+      - websocket-server
 
-  register_ip:
-    build: ./register_ip  # Dit is een Python-script dat het IP van PC 1 registreert
-    container_name: register_ip_script
-    depends_on:
-      - flask_app
-    networks:
-      - app_network
-
-networks:
-  app_network:
-    driver: bridge
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email jouw-email@example.com --agree-tos --no-eff-email --force-renewal -d parentpager.pouwertronics.nl
