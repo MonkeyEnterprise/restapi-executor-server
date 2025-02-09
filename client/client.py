@@ -1,30 +1,25 @@
 import requests
-import time
-import os
+from flask import Flask, jsonify
 
-API_URL = "https://parentpager.pouwertronics.nl"
-API_KEY = "JOUW-GEHEIME-API-KEY"  # Zorg ervoor dat je de juiste API-key gebruikt
-ENDPOINTS = ["/v1/stage/state", "/version"]
+app = Flask(__name__)
 
-def fetch_data(endpoint):
-    url = f"{API_URL}{endpoint}"
-    headers = {"X-API-KEY": API_KEY}
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error fetching {endpoint}: {response.status_code}")
-        return None
+PRO_PRESENTER_API_URL = "http://localhost:5000/api"  # Lokale ProPresenter API
 
-def main():
-    while True:
-        for endpoint in ENDPOINTS:
-            data = fetch_data(endpoint)
-            if data:
-                print(f"Data from {endpoint}: {data}")
-                # Hier kun je de data verder verwerken of integreren met ProPresenter
-        time.sleep(10)  # Wacht 10 seconden voordat je opnieuw ophaalt
+@app.route('/v1/stage/state', methods=['GET', 'POST'])
+def stage_state():
+    try:
+        response = requests.get(f"{PRO_PRESENTER_API_URL}/stage/state")
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/version', methods=['GET', 'POST'])
+def version():
+    try:
+        response = requests.get(f"{PRO_PRESENTER_API_URL}/version")
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    main()
+    app.run(host="0.0.0.0", port=5000)
