@@ -1,5 +1,5 @@
 FROM python:3.11
 WORKDIR /app
-COPY client.py /app/
+COPY app.py /app/
 RUN pip install socketio-client requests
-CMD ["python", "client.py"]
+CMD ["python", "app.py"]
