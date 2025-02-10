@@ -1,48 +1,41 @@
 import socketio
 import requests
-import uuid
+import logging
 
-# Initialiseer socketio client
+# Initialisatie van de SocketIO client
 sio = socketio.Client()
+client_id = "client2"  # Dynamisch client_id, moet overeenkomen met wat de server verwacht
+server_url = "http://192.168.100.2:5000"  # Serveradres
 
-# Genereer een client_id voor deze client
-client_id = str(uuid.uuid4())
-print(f"Client ID: {client_id}")
+logging.basicConfig(level=logging.INFO)
 
-# Event bij verbinden
 @sio.event
 def connect():
-    print("✅ Verbonden met de server!")
+    """Verbind met de server en registreer."""
+    logging.info("Verbonden met de server")
+    sio.emit('register', {'client_id': client_id})  # Stuur het client_id naar de server
 
-# Event bij het ontvangen van een 'get_version' bericht
-@sio.on('get_version')
-def on_get_version(data):
-    print("🔄 Versieaanvraag ontvangen...")
-    
-    # Ophalen van de versie bij de API
+@sio.on('request_version')
+def request_version(data):
+    """Verzoek om versie-informatie van de server verwerken en antwoord sturen."""
+    request_id = data.get('request_id')  # Verkrijg het request_id
+    requester_id = data.get('requester_id')  # Verkrijg het requester_id (client1)
+    logging.info(f"Versie-aanvraag ontvangen voor {requester_id}, request_id: {request_id}")
+
     try:
-        response = requests.get("http://192.168.100.30:8000/version", timeout=5)
-        response.raise_for_status()  # Controleer of het een succesvolle response was
-        version_data = response.json()
+        # Doe het verzoek naar de versie-api van de client2
+        response = requests.get("http://192.168.100.30:8000/version")
+        version_data = response.json()  # Verkrijg de versie-informatie
+        logging.info(f"Versie-info opgehaald: {version_data}")
 
-        # Stuur de versie terug naar de server met het request_id en de client_id
-        sio.emit('version_response', {
-            'request_id': data['request_id'],
-            'client_id': client_id,  # Voeg client_id toe aan het antwoord
-            'version': version_data
+        # Stuur het resultaat terug naar de server (en de requester)
+        sio.emit('version_info', {
+            'request_id': request_id,  # Voeg het request_id toe voor identificatie
+            'version_data': version_data
         })
-        print("✅ Versie verstuurd!")
+    except Exception as e:
+        logging.error(f"Fout bij ophalen versie: {e}")
 
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Fout bij ophalen versie: {e}")
-        sio.emit('version_response', {"error": "failed to get version", 'client_id': client_id})
-
-# Verbinding maken met de server, met client_id als parameter
-try:
-    print(f"Verbindingsheaders: {{'client_id': {client_id}}}")
-    sio.connect("http://192.168.100.2:7000", headers={"client_id": client_id}, wait_timeout=5)
-except socketio.exceptions.ConnectionError:
-    print("❌ Kan geen verbinding maken met de server!")
-
-# Wacht op events
+# Verbind met de server
+sio.connect(server_url)
 sio.wait()

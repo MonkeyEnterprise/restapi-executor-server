@@ -1,67 +1,100 @@
-import logging
+import socketio
 from flask import Flask, request, jsonify
-from flask_socketio import SocketIO, emit
+import logging
 import uuid
-
-# Logging instellen
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
+from flask_socketio import SocketIO
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
 
-clients = {}  # Opslag voor verbonden clients {client_id: request.sid}
-pending_requests = {}  # Opslag voor lopende versieaanvragen {request_id: client_id}
+# Maak een SocketIO server
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
-@app.route('/api/version', methods=['GET'])
-def handle_version_request():
-    client_id = request.args.get("client_id")
-    if client_id in clients:  # Controleer of client_id bestaat in de 'clients' dictionary
-        request_id = str(uuid.uuid4())  # Genereer een unieke request-ID
-        pending_requests[request_id] = client_id  # Koppel het verzoek aan de client
-        logger.info(f"Versieaanvraag ({request_id}) verzonden naar client {client_id}")
-        
-        socketio.emit('get_version', {'request_id': request_id}, room=clients[client_id])
-        return jsonify({"status": "sent", "request_id": request_id}), 200
-    
-    logger.warning("Client niet verbonden")
-    return jsonify({"error": "client not connected"}), 400
+clients = {}  # Opslag van client_id -> socket_id
+pending_requests = {}  # Opslag van verzoeken {request_id: client_id}
 
-@socketio.on('connect')
-def handle_connect():
-    client_id = request.headers.get("client_id")  # Verkrijg client_id uit headers
-    if client_id:
-        clients[client_id] = request.sid  # Koppel client_id aan sid
-        logger.info(f"Client verbonden: {client_id} (sid: {request.sid})")
+logging.basicConfig(level=logging.INFO)
+
+
+@app.route('/version', methods=['GET'])
+def get_version():
+    """Client1 vraagt de versie op, de server stuurt het verzoek naar een beschikbare Client2."""
+    client_id = request.headers.get('X-Client-ID')
+    logging.info(f"Ontvangen versie-verzoek van {client_id}")
+
+    if not client_id:
+        return jsonify({"status": "error", "message": "X-Client-ID header is vereist"}), 400
+
+    # Genereer een uniek request_id en sla het op
+    request_id = str(uuid.uuid4())
+    pending_requests[request_id] = client_id
+    logging.info(f"Versie-verzoek doorgestuurd naar client2 met request_id {request_id}")
+
+    # Stuur een WebSocket-event naar client2
+    if 'client2' in clients:
+        socketio.emit('request_version', {'requester_id': client_id, 'request_id': request_id}, room=clients['client2'])
     else:
-        logger.warning("Geen client_id ontvangen bij connectie.")
+        logging.warning("Geen client2 geregistreerd")
+
+    return jsonify({
+        "status": "success",
+        "message": f"Versie-aanvraag naar client2 gestuurd",
+        "request_id": request_id
+    })
+
+
+@socketio.on('register')
+def handle_register(data):
+    """Client2 registreert zichzelf bij de server."""
+    client_id = data.get('client_id')
+
+    if not client_id:
+        logging.warning("Client probeerde te registreren zonder client_id")
+        return
+
+    clients[client_id] = request.sid
+    logging.info(f"Client {client_id} geregistreerd met socket ID {request.sid}")
+
+
+@socketio.on('version_info')
+def handle_version_info(data):
+    """Client2 stuurt de versie-info terug, en de server geeft het door aan Client1."""
+    request_id = data.get('request_id')
+    version_data = data.get('version_data')
+
+    logging.info(f"Versie-info ontvangen voor request_id {request_id}, terugsturen naar client1")
+
+    # Zoek naar de client die het verzoek heeft gedaan
+    if request_id in pending_requests:
+        requester_id = pending_requests.pop(request_id)  # Verkrijg de client_id die het verzoek heeft gedaan
+        logging.info(f"Versie-info voor request_id {request_id} wordt teruggestuurd naar {requester_id}")
+
+        # Stuur versie-informatie als een enkele response naar client1
+        socketio.emit('version_response', {
+            'status': 'success',
+            'message': 'Versie-informatie ontvangen',
+            'request_id': request_id,
+            'response': version_data
+        }, room=clients[requester_id])
+
+    else:
+        logging.warning(f"Geen openstaande verzoeken voor request_id {request_id}, kan geen versie-info terugsturen")
+
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    client_id = next((key for key, value in clients.items() if value == request.sid), None)
-    if client_id:
-        clients.pop(client_id)  # Verwijder client uit de 'clients' dictionary
-        logger.info(f"Client verbroken: {client_id} (sid: {request.sid})")
+    """Verwijder een client als deze de verbinding verbreekt."""
+    disconnected_client = None
+    for cid, sid in clients.items():
+        if sid == request.sid:
+            disconnected_client = cid
+            break
 
-@socketio.on('version_response')
-def handle_version_response(data):
-    request_id = data.get("request_id")
-    version = data.get("version")
-    client_id = data.get("client_id")  # Ontvang client_id
-    
-    if request_id in pending_requests:
-        # Zoek de client_id in de pending_requests
-        original_client_id = pending_requests.pop(request_id)
-        
-        # Verzend de versieinformatie naar de juiste client (browser)
-        if original_client_id == client_id:
-            logger.info(f"Versie ontvangen van client {client_id}: {version}")
-            # Gebruik de client_id om het antwoord terug te sturen naar de juiste socket
-            socketio.emit('version_info', {'version': version}, room=clients[original_client_id])
-        else:
-            logger.warning(f"Client ID mismatch voor request_id {request_id}. Verwacht {original_client_id}, maar ontvangen {client_id}.")
-    else:
-        logger.warning(f"Onbekende versie-response ontvangen: {data}")
+    if disconnected_client:
+        del clients[disconnected_client]
+        logging.info(f"Client {disconnected_client} is losgekoppeld")
 
+
+# Start de server met eventlet
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port=5000, debug=False)
+    logging.info("Server wordt gestart op poort 5000...")
+    socketio.run(app, host='0.0.0.0', port=5000)
