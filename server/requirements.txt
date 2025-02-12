@@ -1,5 +1,2 @@
-Flask
-Flask-SocketIO
-Flask-JWT-Extended
-gevent
-requests
+flask
+gunicorn
