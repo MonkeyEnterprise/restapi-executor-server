@@ -270,8 +270,8 @@ def get_args():
         description="Start the Flask API server.", 
         add_help=False  # Disable help to avoid conflicts with Gunicorn's arguments.
     )
-    parser.add_argument("--host", type=str, default=os.environ.get("HOST", "127.0.0.1"), help="Host IP address")
-    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 80)), help="Port number")
+    parser.add_argument("--host", type=str, default=os.environ.get("HOST", "0.0.0.0"), help="Host IP address")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 5000)), help="Port number")
     parser.add_argument("--debug", action="store_true", default=os.environ.get("DEBUG", "False").lower() == "true", help="Enable debug mode")
     args, _ = parser.parse_known_args()  # Ignore any unknown arguments.
     return args

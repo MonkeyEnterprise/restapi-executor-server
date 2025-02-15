@@ -1,0 +1,3 @@
+```bash
+curl -X POST http://localhost:5000/api/v1/enqueueCommand -H "Content-Type: application/json" -d "{\"endpoint\": \"trigger\", \"data\": {\"messageID\": \"parentpager\", \"messageToken\": \"number\", \"messageContent\": \"17\"}}"
+```
