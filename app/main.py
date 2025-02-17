@@ -6,7 +6,7 @@
 # command queue for managing and processing commands.
 ##
 
-from modules import *
+from server import Server
 import logging
 import os
 import argparse
@@ -38,7 +38,7 @@ def gunicorn_server():
         Flask: A Flask application instance.
     """
     args = get_args()
-    server = RestAPIServer(host=args.host, port=args.port, debug=args.debug)
+    server = Server(host=args.host, port=args.port, debug=args.debug)
     return server.app
 
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # Running the script directly: Start the Flask server with command-line arguments.
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
     args = get_args()
-    server = RestAPIServer(host=args.host, port=args.port, debug=args.debug)
+    server = Server(host=args.host, port=args.port, debug=args.debug)
     server.run()
 else:
     # Importing this module elsewhere or running via Gunicorn: Expose the Flask app instance.
