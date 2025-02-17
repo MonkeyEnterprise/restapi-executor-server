@@ -17,7 +17,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - parentpager_executor_server  # Ensure Flask starts first
+      - parentpager_executor_server
     networks:
       - app-network
 
