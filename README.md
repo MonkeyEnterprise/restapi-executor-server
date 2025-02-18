@@ -1,29 +1,94 @@
-# Propresenter 7 client executor 
+# Propresenter 7 Client Executor 
 
-## Server
-This script implements a **Flask-based REST API server** with a **thread-safe command queue** for managing and processing commands.
+## **1. Endpoints**
+### **Enqueue a Command**
+- **Endpoint:** `POST /api/v1/command`
+- **Content-Type:** `application/json`
+- **Description:** Submits a command to the queue.
 
-### **Key Features**
-- Runs a **Flask REST API server** to handle requests.
-- Implements a **CommandQueue** to manage incoming commands and responses.
-- Utilizes **multithreading** to process commands asynchronously.
-- Includes **logging and argument parsing** for debugging and configuration.
+##### **Example Request:**
+```bash
+curl -X POST http://localhost/api/v1/command ^
+      -H "Content-Type: application/json" ^
+      -d "{\"key_1\":\"value for key 1\", \"key_2\":\"value for key 2\"}" 
+```
 
-### **Main Components**
-#### **1. CommandQueue (Class)**
-- Manages incoming commands and their responses in a **thread-safe** manner.
-- Uses a locking mechanism to ensure concurrency safety.
+##### **Response Codes:**
+- **`200 OK`** – Command successfully queued.
+- **`400 Bad Request`** – Invalid request format.
+- **`500 Internal Server Error`** – Unexpected server error.
 
-#### **2. API Routes**
-- Handles requests to enqueue commands, retrieve pending commands, and fetch responses.
-- Endpoints:
-  - `api/v1` → Get the status of the server.
-  - `api/v1/enqueue` → Add a command to the queue.
-  - `api/v1/get_commands` → Retrieve all queued commands.
-  - `api/v1/fetch_response` → Get the response for a processed command.
+##### **Example Response:**
+```json
+{
+  "status": "queued",
+  "uuid": "0f625d48-b366-4679-9c0b-bc2f9b2827cf"
+}
+```
+----
+### **Get Enqueued Commands**
+- **Endpoint:** `GET /api/v1/commands`
+- **Description:** Get all enqueued commands.
 
-#### **3. Server Initialization**
-- The Flask server is initialized and configured based on command-line arguments.
-- Can be run as a standalone service.
+##### **Example Request:**
+```bash
+curl -X GET http://localhost/api/v1/commands
+```
 
-This script is designed to facilitate **communication between a client and a remote executor**, ensuring commands are processed in an orderly manner.
+##### **Response Codes:**
+- **`200 OK`** – Successfully retrieved enqueued commands.
+- **`404 Not Found`** – No commands in queue.
+- **`500 Internal Server Error`** – Unexpected server error.
+
+##### **Example Response:**
+```json
+[
+  {
+    "key_1":"value for key 1",
+    "key_2":"value for key 2",
+    "uuid":"72d8975d-34ab-4b3b-beaf-57cabcc458e6"
+  }
+]
+
+```
+----
+### **Clear All Enqueued Commands**
+- **Endpoint:** `DELETE /api/v1/commands`
+- **Description:** Clears all enqueued commands.
+
+##### **Example Request:**
+```bash
+curl -X DELETE http://localhost/api/v1/commands
+```
+
+##### **Response Codes:**
+- **`200 OK`** – Commands successfully cleared.
+- **`500 Internal Server Error`** – Unexpected server error.
+
+##### **Example Response:**
+```json
+{
+  "message": "Successfully cleared the queued commands"
+}
+```
+----
+### **Get Server Status**
+- **Endpoint:** `GET /api/v1`
+- **Description:** Retrieves the status of the server.
+
+##### **Example Request:**
+```bash
+curl -X GET http://localhost/api/v1
+```
+
+##### **Response Codes:**
+- **`200 OK`** – Server is running and reachable.
+- **`500 Internal Server Error`** – Unexpected server error.
+
+##### **Example Response:**
+```json
+{
+  "client_ip": "127.0.0.1",
+  "message": "You are successfully connected to the REST API server."
+}
+```
