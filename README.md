@@ -1,4 +1,4 @@
-# Propresenter 7 Client Executor 
+# REST API Executor sercer
 
 ## **1. Endpoints**
 ### **Enqueue a Command**
