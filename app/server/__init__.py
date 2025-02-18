@@ -14,10 +14,6 @@ import logging
 
 
 class Server:
-    """
-    Example: >> curl -X POST http://localhost:5000/api/v1/addCommand -H "Content-Type: application/json" -d "{\"endpoint\":\"test\"}"
-    """    
-    
     def __init__(self, host: str = "127.0.0.1", port: int = 5000, debug: bool = False) -> None:
         """Initializes the server with Flask, routing, and a command queue.
 
