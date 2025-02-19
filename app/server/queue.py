@@ -12,7 +12,7 @@ import uuid
 import logging
 
 class Queue:
-    """Defines queue lists for the Flask application."""
+    """Defines queue lists for a Flask application."""
     def __init__(self) -> None:
         self.commands: List[Dict] = []
         self.lock: threading.Lock = threading.Lock()
