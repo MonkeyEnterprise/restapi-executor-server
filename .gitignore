@@ -1,3 +1,8 @@
+##
+# Copyright (c) 2025, Lorenzo Pouw.
+# All rights reserved.
+##
+
 # Python
 *.pyc
 *.pyo
@@ -22,7 +27,6 @@ docker-compose.override.yml
 
 # VS Code
 .vscode/
-.code-workspace
 
 # PyCharm
 .idea/
