@@ -1,8 +1,8 @@
 ##
+#
 # Copyright (c) 2025, Lorenzo Pouw.
 # All rights reserved.
 #
-# Command queue for managing and processing commands.
 ##
 
 

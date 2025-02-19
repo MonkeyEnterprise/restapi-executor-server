@@ -1,6 +1,8 @@
 ##
+#
 # Copyright (c) 2025, Lorenzo Pouw.
 # All rights reserved.
+#
 ##
 
 services:
@@ -14,7 +16,12 @@ services:
     networks:
       - app-network
     environment:
+      - HOST=0.0.0.0
+      - PORT=80
+      - DEBUG=false
       - API_KEY=your_secret_api_key
+      - SSL_CERT=path/to/ssl.cert
+      - SSL_KEY=path/to/ssl.pem
 
   nginx:
     image: nginx:latest
