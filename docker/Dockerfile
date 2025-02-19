@@ -1,6 +1,8 @@
 ##
+#
 # Copyright (c) 2025, Lorenzo Pouw.
 # All rights reserved.
+#
 ##
 
 FROM python:3.13-slim
