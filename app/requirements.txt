@@ -1,2 +1,7 @@
+##
+# Copyright (c) 2025, Lorenzo Pouw.
+# All rights reserved.
+##
+
 flask >= 3.1.0
 gunicorn >= 23.0.0
