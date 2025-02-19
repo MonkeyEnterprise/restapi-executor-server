@@ -12,7 +12,7 @@ from flask import Flask, request, jsonify, Response
 import logging
 
 class Endpoints:
-    """Defines API endpoints for the Flask application."""
+    """Defines API endpoints for a Flask application."""
 
     def __init__(self, app: Flask, queue: Queue) -> None:
         """Initializes the Endpoints class with a Flask application instance.
