@@ -6,12 +6,12 @@
 # command queue for managing and processing commands.
 ##
 
+
 from flask import Flask
 from server import Server
 import logging
 import os
 import argparse
-
 
 def get_args() -> argparse.Namespace:
     """Parses command-line arguments for configuring the Flask server.
