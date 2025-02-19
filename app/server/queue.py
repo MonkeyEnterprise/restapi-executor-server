@@ -5,19 +5,16 @@
 # Command queue for managing and processing commands.
 ##
 
+
 from typing import Dict, List
 import threading
 import uuid
 import logging
 
-
 class Queue:    
-
-
     def __init__(self) -> None:
         self.commands: List[Dict] = []
         self.lock: threading.Lock = threading.Lock()
-        
 
     def fetch(self) -> list[dict]:
         """Retrieves the command queue.
