@@ -1,8 +1,9 @@
+# docker-compose.yml
 services:
   parentpager_executor_server:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     container_name: parentpager_executor_server
     expose:
       - "5000"
@@ -23,4 +24,3 @@ services:
 
 networks:
   app-network:
-    driver: bridge
