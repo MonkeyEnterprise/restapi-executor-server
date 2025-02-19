@@ -6,12 +6,12 @@
 # command queue for managing and processing commands.
 ##
 
+
 from server.queue import Queue
 from server.routes import Routes
 from server.endpoints import Endpoints
 from flask import Flask, request, jsonify
 import logging
-
 
 __VERSION__: str = "1.0.0"
 
