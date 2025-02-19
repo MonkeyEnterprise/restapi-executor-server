@@ -1,4 +1,8 @@
-# docker-compose.yml
+##
+# Copyright (c) 2025, Lorenzo Pouw.
+# All rights reserved.
+##
+
 services:
   restapi_executor_server:
     build:
