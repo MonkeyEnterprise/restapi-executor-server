@@ -1,4 +1,4 @@
-# REST API Executor Server
+# REST API Executor Server V1.0.0
 ![REST API Executor Server](assets/api-rest-log.png "REST API Executor Server")
 
 ## **1. API Key Authentication**
