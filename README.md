@@ -1,4 +1,5 @@
-# ![Alt text](assets/api-rest-log.jpg "REST API Executor Server")
+# REST API Executor Server
+![REST API Executor Server](assets/api-rest-log.png "REST API Executor Server")
 
 ## **1. API Key Authentication**
 
