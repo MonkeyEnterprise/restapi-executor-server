@@ -20,7 +20,7 @@ def get_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description="Start the Flask API server.")
     
-    parser.add_argument("--host", type=str, default=os.getenv("HOST", "127.0.0.1"), help="Host IP address")
+    parser.add_argument("--host", type=str, default=os.getenv("HOST", "0.0.0.0"), help="Host IP address")
     parser.add_argument("--port", type=int, default=int(os.getenv("PORT", 80)), help="Port number")
     parser.add_argument("--api_key", type=str, default=os.getenv("API_KEY", ""), help="API Key")
     parser.add_argument("--ssl_cert", type=str, default=os.getenv("SSL_CERT", ""), help="Path to SSL certificate.")
