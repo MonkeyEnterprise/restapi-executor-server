@@ -1,11 +1,9 @@
 ##
+#
 # Copyright (c) 2025, Lorenzo Pouw.
 # All rights reserved.
 #
-# This module implements a Flask-based REST API server and a thread-safe
-# command queue for managing and processing commands.
 ##
-
 
 from .queue import Queue
 from flask import Flask, request, jsonify, Response
@@ -23,28 +21,17 @@ class Endpoints:
         """
         self.app = app
         self.queue = queue
-       
+
     def status(self) -> tuple[Response, int]:
-        """Handles the status check endpoint.
-
-        This endpoint returns a success message along with the 
-        client's IP address, indicating that the REST API server is reachable.
-
-        Returns:
-            tuple[Response, int]: A JSON response with a success message, 
-            the client's IP address, and HTTP status 200.
-        """
+        """Handles the status check endpoint."""
         try:
             logging.debug("Entered status endpoint.")
             logging.info("Status check endpoint called.")
-
-            client_ip = request.remote_addr  # Get client IP address
-
+            client_ip = request.remote_addr
             response = jsonify({
                 "message": "You are successfully connected to the REST API server.",
                 "client_ip": client_ip
             })
-
             logging.debug("Exiting status endpoint with response: %s", response.get_json())
             return response, 200
 
@@ -53,14 +40,7 @@ class Endpoints:
             return jsonify({"error": "Internal server error"}), 500
 
     def add_command(self) -> Response:
-        """Adds a command to the queue.
-
-        This endpoint processes a JSON request and adds a command 
-        to the queue.
-
-        Returns:
-            Response: A JSON response containing the queued command status.
-        """
+        """Adds a command to the queue."""
         logging.debug("add_command called with payload: %s", request.json)
         try:
             data, status = self.queue.add(request.json)
@@ -73,51 +53,56 @@ class Endpoints:
         return jsonify(data), status
 
     def get_commands(self) -> tuple[Response, int]:
-        """Fetches and clears all queued commands.
-
-        This endpoint retrieves all stored commands from the queue and clears it.
-        If no commands are available, an empty list is returned.
-
-        Returns:
-            tuple[Response, int]: A JSON response containing the list of commands 
-            and HTTP status 200. If an error occurs, it returns an error response with HTTP 500.
-        """
+        """Fetches and clears all queued commands."""
         logging.debug("get_commands called to fetch and clear all queued commands")
-
         try:
             commands = self.queue.fetch()
-
-            if not commands:  # Handles None or empty case
+            if not commands:
                 logging.warning("No commands found in queue.")
                 commands = []
-
             logging.debug("Retrieved %d commands: %s", len(commands), commands)
-
         except Exception as e:
             logging.error("Error fetching commands: %s", e, exc_info=True)
             return jsonify({"error": "Internal Server Error"}), 500
 
-        logging.info("Successfully fetched and cleared queued commands")
-        return jsonify(commands), 200  # Explicitly returning HTTP 200
+        logging.info("Successfully fetched queued commands")
+        return jsonify(commands), 200
 
-    def clear_commands(self) -> tuple[Response, int]:
-        """Clears all queued commands from the queue.
-
-        This endpoint removes all stored commands in the queue. 
-        If an error occurs, it logs the error and returns an internal server error.
-
-        Returns:
-            tuple[Response, int]: A JSON response confirming the queue has been cleared 
-            and HTTP status 200. If an error occurs, returns an error response with HTTP 500.
-        """
-        logging.debug("clear_commands called to remove all queued commands")
+    def clear_command(self) -> tuple[Response, int]:
+        """Clears a specific command from the queue if UUID is provided, otherwise returns an error."""
+        logging.debug("clear_command called to remove a queued command")
 
         try:
-            self.queue.clear()
-            logging.info("Successfully cleared the queued commands")
-            return jsonify({"message": "Successfully cleared the queued commands"}), 200
+            # Ensure JSON body exists before accessing it
+            if not request.is_json:
+                logging.warning("Request body is missing or not JSON.")
+                return jsonify({"error": "Request body must be JSON"}), 400
+
+            uuid = request.json.get("uuid")
+
+            if not uuid:
+                logging.warning("Clear command failed: UUID is required.")
+                return jsonify({"error": "UUID is required"}), 400
+
+            # Attempt to clear the command with the given UUID
+            if self.queue.clear(uuid):  # Updated to return success status
+                logging.info("Successfully removed command with UUID: %s", uuid)
+                return jsonify({"message": f"Successfully removed command with UUID {uuid}"}), 200
+            else:
+                logging.warning("UUID %s not found in queue.", uuid)
+                return jsonify({"error": "UUID not found in queue"}), 404
 
         except Exception as e:
             logging.error("Error clearing commands: %s", e, exc_info=True)
             return jsonify({"error": "Internal Server Error"}), 500
 
+    def clear_commands(self) -> tuple[Response, int]:
+        """Clears all queued commands from the queue."""
+        logging.debug("clear_commands called to remove all queued commands")
+        try:
+            self.queue.clear()
+            logging.info("Successfully cleared the queued commands")
+            return jsonify({"message": "Successfully cleared the queued commands"}), 200
+        except Exception as e:
+            logging.error("Error clearing commands: %s", e, exc_info=True)
+            return jsonify({"error": "Internal Server Error"}), 500

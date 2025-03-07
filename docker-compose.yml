@@ -1,0 +1,28 @@
+##
+#
+# Copyright (c) 2025, Lorenzo Pouw.
+# All rights reserved.
+#
+##
+
+services:
+  restapi_executor:
+    image: python:3.13-slim
+    container_name: restapi_executor
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    ports:
+      - "80:80"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=80
+      - DEBUG=false
+      - API_KEY=your_secret_api_key
+    command: >
+      /bin/sh -c "
+      pip install --root-user-action=ignore --upgrade pip  &&
+      pip install --root-user-action=ignore --no-cache-dir -r requirements.txt &&
+      gunicorn -w 1 -b 0.0.0.0:80 main:app
+      "
+    restart: always
