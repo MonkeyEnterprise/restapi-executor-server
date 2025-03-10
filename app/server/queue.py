@@ -26,7 +26,6 @@ class Queue:
         try:
             with self.lock:
                 commands = self.commands.copy()
-                self.commands.clear()  # Clear after copying
                 
             logging.debug(f"Data fetched and queue cleared: {commands}")
             logging.info("Fetched and cleared the command queue.")
