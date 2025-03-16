@@ -16,7 +16,7 @@ class Routes:
     and ensuring that only allowed HTTP methods are used.
     """
     
-    AVAILABLE_METHODS: set[str] = {"GET", "POST", "DELETE"}
+    AVAILABLE_METHODS: set[str] = {"GET", "POST"}
 
     def __init__(self, app: Flask) -> None:
         """
