@@ -18,7 +18,7 @@ __VERSION__: str = "1.0.0"
 class Server:
     def __init__(self, host: str, port: int, debug: bool = False, api_key: str = "") -> None:
         """
-        Initializes the server with Flask, routing, and a command queue.
+        Initializes the server with Flask, routing, and a request queue.
 
         Args:
             host (str): The hostname or IP address to bind the server to.
@@ -48,18 +48,22 @@ class Server:
 
     def _setup_routes(self) -> None:
         """
-        Registers API routes via the custom `Routes` class.
+        Registers API routes using the custom Routes class.
+
+        The routes include a status endpoint as well as endpoints for managing the request queue:
+            - Adding a new request
+            - Clearing one or all requests
+            - Listing all queued requests
         """
         base_url = "/api/v1"
 
         # Status & general endpoints
         self.routes.add(f"{base_url}", "status", self._require_api_key(self.endpoints.status), "GET")
 
-        # Command-related endpoints
-        self.routes.add(f"{base_url}/command", "add_command", self._require_api_key(self.endpoints.add_command), "POST")
-        self.routes.add(f"{base_url}/command", "clear_command", self._require_api_key(self.endpoints.clear_command), "DELETE")
-        self.routes.add(f"{base_url}/commands", "clear_commands", self._require_api_key(self.endpoints.clear_commands), "DELETE")
-        self.routes.add(f"{base_url}/commands", "get_commands", self._require_api_key(self.endpoints.get_commands), "GET")
+        # Request-related endpoints
+        self.routes.add(f"{base_url}/queue/add", "add_queue", self._require_api_key(self.endpoints.add_queue), "POST")
+        self.routes.add(f"{base_url}/queue/delete", "clear_queue", self._require_api_key(self.endpoints.clear_queue), "POST")
+        self.routes.add(f"{base_url}/queue/list", "get_queue", self._require_api_key(self.endpoints.get_queue), "GET")
 
     def _require_api_key(self, func):
         """
@@ -69,7 +73,7 @@ class Server:
             func (callable): The function to wrap with API key authentication.
 
         Returns:
-            callable: The wrapped function with API key authentication.
+            callable: The wrapped function which checks the provided API key against the server configuration.
         """
         def wrapper(*args, **kwargs):
             key = request.headers.get("X-API-Key")
@@ -81,7 +85,10 @@ class Server:
 
     def run(self) -> None:
         """
-        Starts the Flask server and handles shutdown signals.
+        Starts the Flask server and registers shutdown signal handlers.
+
+        This method starts the server on the specified host and port and ensures that the server
+        terminates gracefully when a shutdown signal (SIGINT or SIGTERM) is received.
         """
         logging.info(f"Starting server on {self.host}:{self.port} (debug={self.debug})")
         
@@ -93,6 +100,6 @@ class Server:
         signal.signal(signal.SIGTERM, handle_shutdown)
 
         try:
-            self.app.run(host=self.host, port=self.port, debug=self.debug, threaded=True)  
+            self.app.run(host=self.host, port=self.port, debug=self.debug, threaded=True)
         except Exception as e:
             logging.error(f"Unexpected error while running server: {e}", exc_info=True)
