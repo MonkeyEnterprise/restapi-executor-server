@@ -17,7 +17,15 @@ __VERSION__: str = "1.0.0"
 
 class Server:
     def __init__(self, host: str, port: int, debug: bool = False, api_key: str = "") -> None:
-        """Initializes the server with Flask, routing, and a command queue."""
+        """
+        Initializes the server with Flask, routing, and a command queue.
+
+        Args:
+            host (str): The hostname or IP address to bind the server to.
+            port (int): The port number to bind the server to.
+            debug (bool, optional): Whether to run the server in debug mode. Defaults to False.
+            api_key (str, optional): The API key for authentication. Defaults to an empty string.
+        """
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         logging.info(f"Initializing server version {__VERSION__}")
 
@@ -39,7 +47,9 @@ class Server:
         logging.info(f"Server initialized on {self.host}:{self.port} (debug={self.debug})")
 
     def _setup_routes(self) -> None:
-        """Registers API routes via the custom `Routes` class."""
+        """
+        Registers API routes via the custom `Routes` class.
+        """
         base_url = "/api/v1"
 
         # Status & general endpoints
@@ -52,7 +62,15 @@ class Server:
         self.routes.add(f"{base_url}/commands", "get_commands", self._require_api_key(self.endpoints.get_commands), "GET")
 
     def _require_api_key(self, func):
-        """Decorator to enforce API key authentication."""
+        """
+        Decorator to enforce API key authentication.
+
+        Args:
+            func (callable): The function to wrap with API key authentication.
+
+        Returns:
+            callable: The wrapped function with API key authentication.
+        """
         def wrapper(*args, **kwargs):
             key = request.headers.get("X-API-Key")
             if self.api_key and key != self.api_key:
@@ -62,7 +80,9 @@ class Server:
         return wrapper
 
     def run(self) -> None:
-        """Starts the Flask server."""
+        """
+        Starts the Flask server and handles shutdown signals.
+        """
         logging.info(f"Starting server on {self.host}:{self.port} (debug={self.debug})")
         
         def handle_shutdown(signum, frame):

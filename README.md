@@ -1,4 +1,4 @@
-# REST API Executor Server v1.0.1
+# REST API Executor Server
 
 ![REST API Executor Server](assets/api-rest-log.png "REST API Executor Server")
 

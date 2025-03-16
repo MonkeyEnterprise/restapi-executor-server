@@ -5,7 +5,6 @@
 #
 ##
 
-
 from flask import Flask
 from server import Server
 import logging
@@ -13,7 +12,8 @@ import os
 import argparse
 
 def get_args() -> argparse.Namespace:
-    """Parses command-line arguments for configuring the Flask server.
+    """
+    Parse command-line arguments for configuring the Flask server.
 
     Returns:
         argparse.Namespace: An object containing parsed arguments.
@@ -36,7 +36,8 @@ def get_args() -> argparse.Namespace:
     return args
 
 def gunicorn_server() -> "Flask":
-    """Initializes and returns a Flask application for use with Gunicorn.
+    """
+    Initialize and return a Flask application for use with Gunicorn.
 
     Returns:
         Flask: A Flask application instance.

@@ -14,11 +14,12 @@ class Queue:
     """Defines queue lists for a Flask application."""
     
     def __init__(self) -> None:
+        """Initializes the Queue with an empty command list and a threading lock."""
         self.commands: List[Dict] = []
         self.lock: threading.Lock = threading.Lock()
 
     def fetch(self) -> List[Dict]:
-        """Retrieves and clears the command queue.
+        """Retrieves the command queue.
 
         Returns:
             List[Dict]: A list of command dictionaries that were in the queue.
@@ -27,15 +28,23 @@ class Queue:
             with self.lock:
                 commands = self.commands.copy()
                 
-            logging.debug(f"Data fetched and queue cleared: {commands}")
+            logging.debug(f"Data fetched: {commands}")
             logging.info("Fetched and cleared the command queue.")
             return commands
+        
         except Exception as e:
             logging.error("Error retrieving commands: %s", e, exc_info=True)
             return []
 
-    def clear(self, uuid: str = None) -> None:
-        """Clears the command queue or removes a specific command by UUID."""
+    def clear(self, uuid: str = None) -> bool:
+        """Clears the command queue or removes a specific command by UUID.
+
+        Args:
+            uuid (str, optional): The UUID of the command to remove. If None, clears the entire queue.
+
+        Returns:
+            bool: True if the queue was cleared or the command was removed, False otherwise.
+        """
         try:
             with self.lock:
                 if uuid:
@@ -44,14 +53,18 @@ class Queue:
 
                     if len(self.commands) == initial_length:
                         logging.warning("UUID %s not found in queue.", uuid)
+                        return False
                     else:
                         logging.info("Command with UUID %s removed.", uuid)
+                        return True
                 else:
                     self.commands.clear()
                     logging.info("Command queue cleared successfully.")
+                    return True
 
         except Exception as e:
             logging.error("Error clearing the command queue: %s", e, exc_info=True)
+            return False
 
     def add(self, command: Dict) -> tuple[Dict, int]:
         """Adds a command to the queue with a unique ID.
@@ -60,7 +73,7 @@ class Queue:
             command (Dict): The command to be added.
 
         Returns:
-            tuple[Dict, int]: Command status and HTTP status code.
+            tuple[Dict, int]: A tuple containing the command status and HTTP status code.
 
         Raises:
             TypeError: If the command is not a dictionary.

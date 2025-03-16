@@ -13,7 +13,8 @@ class Endpoints:
     """Defines API endpoints for a Flask application."""
 
     def __init__(self, app: Flask, queue: Queue) -> None:
-        """Initializes the Endpoints class with a Flask application instance.
+        """
+        Initializes the Endpoints class with a Flask application instance.
 
         Args:
             app (Flask): The Flask application instance.
@@ -23,14 +24,21 @@ class Endpoints:
         self.queue = queue
 
     def status(self) -> tuple[Response, int]:
-        """Handles the status check endpoint."""
+        """
+        Handles the status check endpoint.
+
+        Returns:
+            tuple[Response, int]: A tuple containing the JSON response and the HTTP status code.
+        """
         try:
             logging.debug("Entered status endpoint.")
             logging.info("Status check endpoint called.")
             client_ip = request.remote_addr
+            client_name = request.remote_addr
             response = jsonify({
                 "message": "You are successfully connected to the REST API server.",
-                "client_ip": client_ip
+                "client_ip": client_ip,
+                "client_name": client_name
             })
             logging.debug("Exiting status endpoint with response: %s", response.get_json())
             return response, 200
@@ -40,7 +48,12 @@ class Endpoints:
             return jsonify({"error": "Internal server error"}), 500
 
     def add_command(self) -> Response:
-        """Adds a command to the queue."""
+        """
+        Adds a command to the queue.
+
+        Returns:
+            Response: A JSON response containing the result of the operation.
+        """
         logging.debug("add_command called with payload: %s", request.json)
         try:
             data, status = self.queue.add(request.json)
@@ -53,7 +66,12 @@ class Endpoints:
         return jsonify(data), status
 
     def get_commands(self) -> tuple[Response, int]:
-        """Fetches and clears all queued commands."""
+        """
+        Fetches and clears all queued commands.
+
+        Returns:
+            tuple[Response, int]: A tuple containing the JSON response with the list of commands and the HTTP status code.
+        """
         logging.debug("get_commands called to fetch and clear all queued commands")
         try:
             commands = self.queue.fetch()
@@ -69,11 +87,15 @@ class Endpoints:
         return jsonify(commands), 200
 
     def clear_command(self) -> tuple[Response, int]:
-        """Clears a specific command from the queue if UUID is provided, otherwise returns an error."""
+        """
+        Clears a specific command from the queue if UUID is provided, otherwise returns an error.
+
+        Returns:
+            tuple[Response, int]: A tuple containing the JSON response and the HTTP status code.
+        """
         logging.debug("clear_command called to remove a queued command")
 
         try:
-            # Ensure JSON body exists before accessing it
             if not request.is_json:
                 logging.warning("Request body is missing or not JSON.")
                 return jsonify({"error": "Request body must be JSON"}), 400
@@ -84,8 +106,7 @@ class Endpoints:
                 logging.warning("Clear command failed: UUID is required.")
                 return jsonify({"error": "UUID is required"}), 400
 
-            # Attempt to clear the command with the given UUID
-            if self.queue.clear(uuid):  # Updated to return success status
+            if self.queue.clear(uuid):
                 logging.info("Successfully removed command with UUID: %s", uuid)
                 return jsonify({"message": f"Successfully removed command with UUID {uuid}"}), 200
             else:
@@ -97,7 +118,12 @@ class Endpoints:
             return jsonify({"error": "Internal Server Error"}), 500
 
     def clear_commands(self) -> tuple[Response, int]:
-        """Clears all queued commands from the queue."""
+        """
+        Clears all queued commands from the queue.
+
+        Returns:
+            tuple[Response, int]: A tuple containing the JSON response and the HTTP status code.
+        """
         logging.debug("clear_commands called to remove all queued commands")
         try:
             self.queue.clear()
