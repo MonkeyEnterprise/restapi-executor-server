@@ -1,16 +1,1 @@
-{
-    "folders": [
-        {
-            "path": "./"
-        }
-    ],
-    "settings": {
-        "cSpell.ignoreWords": [
-            "jsonify",
-            "nginx",
-            "gunicorn",
-            "levelname",
-            "restapi"
-        ]
-    }
-}
+{"folders":[{"path":"./"}],"settings":{"cSpell.ignoreWords":["errorhandler","jsonify","nginx","gunicorn","levelname","restapi"]}}
