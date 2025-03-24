@@ -9,7 +9,7 @@ All API requests must include an API key in the request headers.
 - **Header Name:** `X-API-Key`
 - **Example:**
   ```bash
-  curl -X GET http://localhost/api/v1 -H "X-API-Key: your_secret_api_key"
+  curl -X GET http://localhost/ -H "X-API-Key: your_secret_api_key"
   ```
 
 Missing or incorrect API key results in a `401 Unauthorized` error.
@@ -52,16 +52,29 @@ docker logs -f restapi_executor_server
 
 ## 3. API Endpoints
 
+### Server Status
+
+- **Endpoint:** `GET /`
+- **Description:** Checks the API server status.
+
+**Example Request:**
+
+```bash
+curl -X GET http://localhost/
+```
+
+---
+
 ### Enqueue a Request
 
-- **Endpoint:** `POST /api/v1/queue/add`
+- **Endpoint:** `POST /queue`
 - **Content-Type:** `application/json`
 - **Description:** Submits a request to the queue.
 
 **Example Request:**
 
 ```bash
-curl -X POST http://localhost/api/v1/queue/add \
+curl -X POST http://localhost/queue \
      -H "Content-Type: application/json" \
      -H "X-API-Key: your_secret_api_key" \
      -d '{"key_1":"value for key 1", "key_2":"value for key 2"}'
@@ -83,22 +96,23 @@ curl -X POST http://localhost/api/v1/queue/add \
 }
 ```
 
+---
+
 ### Get Enqueued Requests
 
-- **Endpoint:** `GET /api/v1/queue/list`
-- **Description:** Retrieve all enqueued requests.
+- **Endpoint:** `GET /queue`
+- **Description:** Retrieves all enqueued requests.
 
 **Example Request:**
 
 ```bash
-curl -X GET http://localhost/api/v1/queue/list -H "X-API-Key: your_secret_api_key"
+curl -X GET http://localhost/queue -H "X-API-Key: your_secret_api_key"
 ```
 
 **Response Codes:**
 
 - `200 OK` – Successfully retrieved enqueued requests.
 - `401 Unauthorized` – Missing or incorrect API key.
-- `404 Not Found` – No requests in queue.
 - `500 Internal Server Error` – Unexpected server error.
 
 **Example Response:**
@@ -113,57 +127,49 @@ curl -X GET http://localhost/api/v1/queue/list -H "X-API-Key: your_secret_api_ke
 ]
 ```
 
-### Clear All Enqueued Requests
+---
 
-- **Endpoint:** `POST /api/v1/queue/delete`
-- **Description:** Clears all enqueued requests.
+### Delete Enqueued Requests
 
-**Example Request:**
+- **Endpoint:** `POST /queue/delete`
+- **Description:** Clears all enqueued requests or deletes a specific request using its unique `UUID`.
+- **URL Parameters:**
+  - `uuid`: (Optional) UUID of the request to delete. Use `uuid=all` to clear the entire queue.
+
+**Example Request (Clear all):**
 
 ```bash
-curl -X POST http://localhost/api/v1/queue/delete -H "X-API-Key: your_secret_api_key"
+curl -X POST "http://localhost/queue/delete?uuid=all" -H "X-API-Key: your_secret_api_key"
+```
+
+**Example Request (Delete specific):**
+
+```bash
+curl -X POST "http://localhost/queue/delete?uuid=123e4567-e89b-12d3-a456-426614174000" -H "X-API-Key: your_secret_api_key"
 ```
 
 **Response Codes:**
 
-- `200 OK` – Requests successfully cleared.
-- `401 Unauthorized` – Missing or incorrect API key.
-- `500 Internal Server Error` – Unexpected server error.
-
-**Example Response:**
-
-```json
-{
-  "message": "Successfully cleared the queued requests"
-}
-```
-
-### Clear a Specific Enqueued Request
-
-- **Endpoint:** `POST /api/v1/queue/delete`
-- **Description:** Removes a specific request from the queue using its unique `UUID`.
-
-**Example Request:**
-
-```bash
-curl -X POST http://localhost/api/v1/queue/delete \
-     -H "Content-Type: application/json" \
-     -H "X-API-Key: your_secret_api_key" \
-     -d '{"uuid": "123e4567-e89b-12d3-a456-426614174000"}'
-```
-
-**Response Codes:**
-
-- `200 OK` – Request successfully removed.
+- `200 OK` – Requests successfully cleared or specific request removed.
+- `400 Bad Request` – UUID parameter missing.
 - `401 Unauthorized` – Missing or incorrect API key.
 - `404 Not Found` – UUID not found in queue.
 - `500 Internal Server Error` – Unexpected server error.
 
-**Example Response:**
+**Example Response (Clear all):**
 
 ```json
 {
-  "message": "Successfully removed command with UUID 123e4567-e89b-12d3-a456-426614174000"
+  "status": "cleared"
+}
+```
+
+**Example Response (Delete specific):**
+
+```json
+{
+  "status": "removed",
+  "uuid": "123e4567-e89b-12d3-a456-426614174000"
 }
 ```
 
